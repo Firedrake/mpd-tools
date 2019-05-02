@@ -16,10 +16,10 @@ my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
        n => 3,                             # maintain this queue
        i => 10,                            # update interval
        s => 10,                            # similarity window
-       p => 20,                            # playlist window
+       w => 20,                            # playlist window
          );
 
-getopts('h:p:f:n:i:s:v',\%o);
+getopts('h:p:f:n:i:s:w:v',\%o);
 
 unless ($o{f} =~ /\/$/) {
   $o{f}.='/';
@@ -98,7 +98,7 @@ while (1) {
         my $candidate=-1;
         while (1) {
           $candidate++;
-          if ($candidate>=$o{p} || $candidate > $#playlist) {
+          if ($candidate>=$o{w} || $candidate > $#playlist) {
             last;
           }
           if (exists $q{$playlist[$candidate]}) {

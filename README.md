@@ -57,6 +57,7 @@ command line parameters.
 - -i: check every this-many seconds
 - -s: check this many playlist tracks for similarity
 - -p: check this many recently-played tracks for similarity
+- -v: be verbose
 
 # mp
 
