@@ -31,7 +31,7 @@ earlier update will be lost.
 
 This is a random queue filler for mpd. Run as:
 
-robodj [options] /path/to/playlist.m3u
+`robodj [options] /path/to/playlist.m3u`
 
 The m3u playlist may contain relative or absolute paths. These will be
 canonicalised, and anything before the value of the -f option stripped
@@ -47,6 +47,8 @@ few (by default ten) tracks played, and a selection (by default 20) of
 the tracks in the playlist, and try to pick one that's relatively
 unlike the recent tracks (based on filename components).
 
+Probably won't work reliable with utf8 filenames.
+
 It will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.
 
@@ -54,7 +56,6 @@ command line parameters.
 - -p: MPD port
 - -f: final component of mpd music path
 - -n: keep the future playlist at least this long
-- -i: check every this-many seconds
 - -s: check this many playlist tracks for similarity
 - -w: check this many recently-played tracks for similarity
 - -v: be verbose
@@ -65,7 +66,9 @@ This is a simple non-interactive command-line client, written because the
 functionality was removed from ncmpcpp. (Lots of things will go wrong
 if you fat-finger commands. Don't.)
 
-Run as: mp command [command...]
+Run as:
+
+`mp command [command...]`
 
 You can concatenate as many basic commands as you like, and up to one
 advanced command at the end of the line.

@@ -14,7 +14,6 @@ my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
        p => $ENV{MPD_PORT} || '6600',      # mpdport
        f => '/audio/',                     # strip filename to mpd root
        n => 3,                             # maintain this queue
-       i => 10,                            # update interval
        s => 10,                            # similarity window
        w => 20,                            # playlist window
          );
@@ -125,7 +124,7 @@ while (1) {
       next;
     }
   }
-  sleep $o{i};
+  $mpd->idle(qw(player playlist));
 }
 
 sub addpl {
