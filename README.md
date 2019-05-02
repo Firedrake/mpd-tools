@@ -62,8 +62,6 @@ few (by default ten) tracks played, and a selection (by default 20) of
 the tracks in the playlist file, and try to pick one that's relatively
 unlike the recent tracks (based on filename components).
 
-Probably won't work reliable with utf8 filenames.
-
 It will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.
 
@@ -89,8 +87,6 @@ off before the item is fed to MPD. So if your MPD music path is
 
 You may also use `@name` to incorporate the contents of an existing
 named playlist.
-
-Probably won't work reliable with utf8 filenames.
 
 It will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.
@@ -145,8 +141,6 @@ Example: `mp q "Popular/Blackmore's Night/1997 Shadow of the Moon/15 Wish You We
 
 If the player is stopped, it will start playing with the first item
 queued.
-
-Probably won't work reliable with utf8 filenames.
 
 mp will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.

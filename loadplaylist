@@ -7,6 +7,7 @@ use Net::MPD;
 use Getopt::Std;
 use Cwd qw(abs_path cwd);
 use List::Util qw(shuffle min max first);
+use Encode qw(decode);
 
 my %own;
 
@@ -55,7 +56,7 @@ foreach my $plfile (@ARGV) {
       chomp;
       my $file=abs_path(join('/',$pldir,$_));
       $file =~ s/^.*?$o{f}//;
-      push @playlist,$file;
+      push @playlist,decode('UTF-8',$file) || $file;
     }
     close I;
   } elsif ($plfile =~ /^@(.*)/) {
