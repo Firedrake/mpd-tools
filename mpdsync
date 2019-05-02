@@ -1,0 +1,80 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+
+use Net::MPD;
+
+# you must have instances defined thus:
+# /etc/mpdINSTANCE.conf
+# /etc/init.d/mpdINSTANCE
+# INSTANCE can be null, e.g. for the default instance
+
+my %cf;
+
+chdir '/etc';
+opendir D,'.';
+foreach my $conffile (grep /^mpd.*\.conf$/,readdir D) {
+  $conffile =~ /^mpd(.*)\.conf$/;
+  my $instance=$1 || '';
+  my $r={};
+  my $lr=$r;
+  open I,'<',$conffile;
+  while (<I>) {
+    chomp;
+    s/\s*#.*$//;
+    if (/./) {
+      if (/^(.*?)\s*\{/) {
+        my $sk=$1;
+        unless (exists $r->{$sk}) {
+          $r->{$sk}=[];
+        }
+        push @{$r->{$sk}},{};
+        $lr=$r->{$sk}[-1];
+      } elsif (/\}/) {
+        $lr=$r;
+      } else {
+        my ($k,$v)=split ' ',$_,2;
+        $v =~ s/^"(.*)"$/$1/;
+        $lr->{$k}=$v;
+      }
+    }
+  }
+  close I;
+  $cf{$instance}=$r;
+}
+closedir D;
+
+$cf{''}{port} ||= 6600;
+
+if (scalar keys %cf < 2) {      # no sub-instances
+  exit 0;
+}
+
+my $luinstance;
+my $lastupdate=0;
+foreach my $instance (keys %cf) {
+  my $mpd=Net::MPD->new('localhost:'.$cf{$instance}{port}) or next;
+  $cf{$instance}{netmpd}=$mpd;
+  my $s=$mpd->update_status;
+  if (defined $s->{updating_db} && $s->{updating_db} != 0) {
+    exit 0;
+  }
+  my $lutime=$mpd->stats->{db_update};
+  if ($lutime > $lastupdate) {
+    $lastupdate=$lutime;
+    $luinstance=$instance;
+  }
+}
+
+if (defined $luinstance) {
+  delete $cf{$luinstance};
+  foreach my $instance (keys %cf) {
+    my $s=$cf{$instance}{netmpd}->update_status;
+    if ($s->{state} ne 'play' &&
+          $cf{$instance}{netmpd}->stats->{db_update} < $lastupdate) {
+      system("/etc/init.d/mpd$instance",'restart');
+    }
+  }
+}
+
