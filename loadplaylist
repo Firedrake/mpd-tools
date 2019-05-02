@@ -1,0 +1,68 @@
+#! /usr/bin/perl
+
+use strict;
+use warnings;
+
+use Net::MPD;
+use Getopt::Std;
+use Cwd qw(abs_path cwd);
+use List::Util qw(shuffle min max first);
+
+my %own;
+
+my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
+       p => $ENV{MPD_PORT} || '6600',      # mpdport
+       f => '/audio/',                     # strip filename to mpd root
+       a => '',                            # name playlist as this
+         );
+
+getopts('h:p:f:n:da',\%o);
+
+unless ($o{f} =~ /\/$/) {
+  $o{f}.='/';
+}
+
+my $mpd=Net::MPD->connect("$o{h}:$o{p}") or die "no connect";
+
+unless ($o{n}) {
+  $o{n}=$ARGV[0];
+  $o{n} =~ s/^@//;
+  $o{n} =~ s/.*\/([^\/]+)\.[a-z0-9]+$/$1/;
+}
+
+{
+  my %pls=map {$_->{playlist} => 1} $mpd->list_playlists;
+  if (exists $pls{$o{n}}) {
+    if (exists $o{d}) {
+      $mpd->rm($o{n});
+    } elsif (!exists $o{a}) {
+      die "Not overwriting playlist $o{n}\n";
+    }
+  }
+}
+
+my @playlist;
+
+foreach my $plfile (@ARGV) {
+  if (-e $plfile) {
+    open I,'<:encoding(utf-8)',$plfile or next;
+    binmode I;
+    (my $pldir=$plfile) =~ s/\/[^\/]*$//;
+    unless ($pldir) {
+      $pldir=cwd;
+    }
+    while (<I>) {
+      chomp;
+      my $file=abs_path(join('/',$pldir,$_));
+      $file =~ s/^.*?$o{f}//;
+      push @playlist,$file;
+    }
+    close I;
+  } elsif ($plfile =~ /^@(.*)/) {
+    push @playlist,map {$_->{uri}} grep {$_->{type} eq 'file'} $mpd->list_playlist($1);
+  }
+}
+
+foreach (@playlist) {
+  $mpd->playlist_add($o{n},$_);
+}

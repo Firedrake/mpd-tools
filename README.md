@@ -6,6 +6,14 @@ tested only on Linux.
 
 They are released under GPL v3.
 
+A terminological consideration: I distinguisn in this document between
+
+- the QUEUE, the list of tracks through which mpd will play. (This is
+  sometimes referred to in mpd documentation as "the playlist".)
+- a PLAYLIST FILE, a text file containing one track filename per line.
+- a NAMED PLAYLIST, a data construct within mpd containing a list of
+  tracks.
+
 # mpdsync
 
 This is a tool to keep multiple mpd instances, sharing a database, in
@@ -31,12 +39,19 @@ earlier update will be lost.
 
 This is a random queue filler for mpd. Run as:
 
-`robodj [options] /path/to/playlist.m3u`
+`robodj [options] /path/to/playlist.m3u (/path/to/playlist.m3u...)`
 
-The m3u playlist may contain relative or absolute paths. These will be
+The playlist file may contain relative or absolute paths. These will be
 canonicalised, and anything before the value of the -f option stripped
 off before the item is fed to MPD. So if your MPD music path is
 /storage/audio/, use `-f /audio/`.
+
+You may also use `@name` to incorporate the contents of an existing
+named playlist.
+
+Both playlist files and named playlists are read only once; if they
+are changed after robodj has started, this will not be reflected in
+the operation of the program.
 
 The robodj keeps track of the items it has added to the queue, and if
 it sees future tracks that it did not add itself, it will move all of
@@ -44,7 +59,7 @@ its tracks to the end of the queue.
 
 When it chooses a new track to add, the robodj will look at the last
 few (by default ten) tracks played, and a selection (by default 20) of
-the tracks in the playlist, and try to pick one that's relatively
+the tracks in the playlist file, and try to pick one that's relatively
 unlike the recent tracks (based on filename components).
 
 Probably won't work reliable with utf8 filenames.
@@ -55,10 +70,37 @@ command line parameters.
 - -h: MPD host
 - -p: MPD port
 - -f: final component of mpd music path
-- -n: keep the future playlist at least this long
-- -s: check this many playlist tracks for similarity
+- -n: keep the future queue at least this long
+- -s: check this many playlist file tracks for similarity
 - -w: check this many recently-played tracks for similarity
 - -v: be verbose
+
+# loadplaylist
+
+This takes a playlist file and creates a named playlist with matching
+contents.
+
+`loadplaylist [options] /path/to/playlist.m3u (/path/to/playlist.m3u...)`
+
+The playlist file may contain relative or absolute paths. These will be
+canonicalised, and anything before the value of the -f option stripped
+off before the item is fed to MPD. So if your MPD music path is
+/storage/audio/, use `-f /audio/`.
+
+You may also use `@name` to incorporate the contents of an existing
+named playlist.
+
+Probably won't work reliable with utf8 filenames.
+
+It will respect MPD_HOST and MPD_PORT environment variables, or
+command line parameters.
+
+- -h: MPD host
+- -p: MPD port
+- -f: final component of mpd music path
+- -n: use this name for the playlist rather than the first filename
+- -d: delete an existing playlist of this name
+- -a: append to an existing playlist of this name
 
 # mp
 
@@ -81,9 +123,9 @@ Basic commands are:
 - pause - pause play
 - resume - resume after a pause
 - restart - start the current track again from the beginning
-- clear - clear the playlist (and stop playing)
-- clean - delete from the playlist everything before the current track
-- crop - delete from the playlist everything after the current track
+- clear - clear the queue (and stop playing)
+- clean - delete from the queue everything before the current track
+- crop - delete from the queue everything after the current track
 
 The advanced commands are:
 
@@ -103,6 +145,8 @@ Example: `mp q "Popular/Blackmore's Night/1997 Shadow of the Moon/15 Wish You We
 
 If the player is stopped, it will start playing with the first item
 queued.
+
+Probably won't work reliable with utf8 filenames.
 
 mp will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.

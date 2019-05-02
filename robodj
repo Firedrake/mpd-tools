@@ -29,19 +29,23 @@ my $mpd=Net::MPD->connect("$o{h}:$o{p}") or die "no connect";
 my @playlist;
 
 foreach my $plfile (@ARGV) {
-  open I,'<:encoding(utf-8)',$plfile;
-  binmode I;
-  (my $pldir=$plfile) =~ s/\/[^\/]*$//;
-  unless ($pldir) {
-    $pldir=cwd;
+  if (-e $plfile) {
+    open I,'<:encoding(utf-8)',$plfile or next;
+    binmode I;
+    (my $pldir=$plfile) =~ s/\/[^\/]*$//;
+    unless ($pldir) {
+      $pldir=cwd;
+    }
+    while (<I>) {
+      chomp;
+      my $file=abs_path(join('/',$pldir,$_));
+      $file =~ s/^.*?$o{f}//;
+      push @playlist,$file;
+    }
+    close I;
+  } elsif ($plfile =~ /^@(.*)/) {
+    push @playlist,map {$_->{uri}} grep {$_->{type} eq 'file'} $mpd->list_playlist($1);
   }
-  while (<I>) {
-    chomp;
-    my $file=abs_path(join('/',$pldir,$_));
-    $file =~ s/^.*?$o{f}//;
-    push @playlist,$file;
-  }
-  close I;
 }
 @playlist=shuffle @playlist;
 if ($o{v}) {
@@ -148,12 +152,3 @@ sub similarity {
   my $ix=(first {$a->[$_] ne $b->[$_]} (0..max($#{$a},$#{$b}))) || -1;
   return $ix+1;
 }
-
-#use YAML::XS;
-#print Dump($mpd->update_status,$mpd->stats,[$mpd->playlist_info]);
-#my @out;
-#foreach my $x ($mpd->playlist_info) {
-#  push @out,{map {$_ => $x->{$_}} qw(Id Pos uri)};
-#}
-#
-#print Dump(\@out);
