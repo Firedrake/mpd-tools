@@ -56,7 +56,7 @@ command line parameters.
 - -n: keep the future playlist at least this long
 - -i: check every this-many seconds
 - -s: check this many playlist tracks for similarity
-- -p: check this many recently-played tracks for similarity
+- -w: check this many recently-played tracks for similarity
 - -v: be verbose
 
 # mp
