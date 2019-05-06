@@ -63,6 +63,12 @@ while (@ARGV) {
       my @i;
       map {push @i,$mpd->add_id($_)} @p;
       $pi=$i[0];
+    } elsif ($id =~ /^@(.+)/) {
+      my $name=$1;
+      my @s=$mpd->list_playlist($name);
+      $mpd->load($name);
+      my @p=$mpd->playlist_info;
+      $pi=$p[-scalar @s]{Id};
     } else {
       $pi=$mpd->add_id($id);
     }

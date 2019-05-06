@@ -4,11 +4,15 @@ use strict;
 use warnings;
 
 use Net::MPD;
+use Getopt::Std;
 
 # you must have instances defined thus:
 # /etc/mpdINSTANCE.conf
 # /etc/init.d/mpdINSTANCE
 # INSTANCE can be null, e.g. for the default instance
+
+my %o;
+getopts('p',\%o);
 
 my %cf;
 
@@ -16,7 +20,7 @@ chdir '/etc';
 opendir D,'.';
 foreach my $conffile (grep /^mpd.*\.conf$/,readdir D) {
   $conffile =~ /^mpd(.*)\.conf$/;
-  my $instance=$1 || '';
+  my $instance=$1 || 'core';
   my $r={};
   my $lr=$r;
   open I,'<',$conffile;
@@ -45,7 +49,7 @@ foreach my $conffile (grep /^mpd.*\.conf$/,readdir D) {
 }
 closedir D;
 
-$cf{''}{port} ||= 6600;
+$cf{core}{port} ||= 6600;
 
 if (scalar keys %cf < 2) {      # no sub-instances
   exit 0;
@@ -54,8 +58,9 @@ if (scalar keys %cf < 2) {      # no sub-instances
 my $luinstance;
 my $lastupdate=0;
 foreach my $instance (keys %cf) {
-  my $mpd=Net::MPD->new('localhost:'.$cf{$instance}{port}) or next;
+  my $mpd=Net::MPD->connect('localhost:'.$cf{$instance}{port}) or next;
   $cf{$instance}{netmpd}=$mpd;
+  $cf{$instance}{playlist}=[grep {defined($_)} map {$_->{uri}} $mpd->playlist_info];
   my $s=$mpd->update_status;
   if (defined $s->{updating_db} && $s->{updating_db} != 0) {
     exit 0;
@@ -68,12 +73,22 @@ foreach my $instance (keys %cf) {
 }
 
 if (defined $luinstance) {
-  delete $cf{$luinstance};
   foreach my $instance (keys %cf) {
-    my $s=$cf{$instance}{netmpd}->update_status;
-    if ($s->{state} ne 'play' &&
-          $cf{$instance}{netmpd}->stats->{db_update} < $lastupdate) {
-      system("/etc/init.d/mpd$instance",'restart');
+    if ($instance ne $luinstance) {
+      my $s=$cf{$instance}{netmpd}->update_status;
+      if ($s->{state} ne 'play' &&
+            $cf{$instance}{netmpd}->stats->{db_update} < $lastupdate) {
+        system("/etc/init.d/mpd$instance",'restart');
+      }
+    }
+    if ($o{p}) {
+      foreach my $src (keys %cf) {
+        if (@{$cf{$src}{playlist}} && $src ne $instance) {
+          my $name="mpd.$src";
+          $cf{$instance}{netmpd}->playlist_clear($name);
+          map {$cf{$instance}{netmpd}->playlist_add($name,$_)} @{$cf{$src}{playlist}};
+        }
+      }
     }
   }
 }

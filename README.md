@@ -33,7 +33,14 @@ all the others as long as they aren't currently playing.
 
 If you update in one instance, then update in another, without running
 this tool in between, bad things may happen; at the very least the
-earlier update will be lost.
+earlier update is likely to be lost.
+
+With the -p option, the program will also create or update named
+playlists on each instance consisting of the queue on each other
+instance, for convenient re-queueing when moving from one server's
+output zone to another. (So if you have instances (blank) and B,
+(blank) will get a named playlist called mpd.B while B will get a
+named playlist called mpd.core.)
 
 # robodj
 
@@ -131,13 +138,17 @@ The advanced commands are:
 
 Example: `mp search wish you were here`
 
-- q - queue a URI or a search result. For search results, append one
-  or more numbers, or no parameter at all for all search results. For
-  a URI, append a single URI in a form that mpd will recognise.
+- q - queue a URI, a search result or a named playlist. For a URI,
+  append a single URI in a form that mpd will recognise. For search
+  results, append one or more numbers as shown in the results of
+  "search", or no parameter at all for all search results. A named
+  playlist should be prefixed with @.
 
 Example: `mp q 7`
 
 Example: `mp q "Popular/Blackmore's Night/1997 Shadow of the Moon/15 Wish You Were Here.ogg"`
+
+Example: `mp q @mpd.core`
 
 If the player is stopped, it will start playing with the first item
 queued.
