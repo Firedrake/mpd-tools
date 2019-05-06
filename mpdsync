@@ -60,7 +60,9 @@ my $lastupdate=0;
 foreach my $instance (keys %cf) {
   my $mpd=Net::MPD->connect('localhost:'.$cf{$instance}{port}) or next;
   $cf{$instance}{netmpd}=$mpd;
-  $cf{$instance}{playlist}=[grep {defined($_)} map {$_->{uri}} $mpd->playlist_info];
+  if ($o{p}) {
+    $cf{$instance}{playlist}=[grep {defined($_)} map {$_->{uri}} $mpd->playlist_info];
+  }
   my $s=$mpd->update_status;
   if (defined $s->{updating_db} && $s->{updating_db} != 0) {
     exit 0;
