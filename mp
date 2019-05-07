@@ -35,13 +35,21 @@ while (@ARGV) {
   } elsif ($cmd eq 'clear') {
     $mpd->clear;
   } elsif ($cmd eq 'clean') {
-    my @pl=map {$_->{Id}} @p;
-    splice @pl,$s->{song};
-    map {$mpd->delete_id($_)} @pl;
+    if (exists $s->{song}) {
+      my @pl=map {$_->{Id}} @p;
+      splice @pl,$s->{song};
+      map {$mpd->delete_id($_)} @pl;
+    } else {
+      $mpd->clear;
+    }
   } elsif ($cmd eq 'crop') {
-    my @pl=map {$_->{Id}} @p;
-    splice @pl,0,$s->{song}+1;
-    map {$mpd->delete_id($_)} @pl;
+    if (exists $s->{song}) {
+      my @pl=map {$_->{Id}} @p;
+      splice @pl,0,$s->{song}+1;
+      map {$mpd->delete_id($_)} @pl;
+    } else {
+      $mpd->clear;
+    }
   } elsif ($cmd eq 'pause') {
     $mpd->pause(1);
   } elsif ($cmd eq 'resume') {
