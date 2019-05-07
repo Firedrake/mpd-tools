@@ -20,8 +20,9 @@ chdir '/etc';
 opendir D,'.';
 foreach my $conffile (grep /^mpd.*\.conf$/,readdir D) {
   $conffile =~ /^mpd(.*)\.conf$/;
-  my $instance=$1 || 'core';
-  my $r={};
+  my $tinstance=$1;
+  my $instance=$tinstance || 'core';
+  my $r={instance => $tinstance};
   my $lr=$r;
   open I,'<',$conffile;
   while (<I>) {
@@ -80,7 +81,7 @@ if (defined $luinstance) {
       my $s=$cf{$instance}{netmpd}->update_status;
       if ($s->{state} ne 'play' &&
             $cf{$instance}{netmpd}->stats->{db_update} < $lastupdate) {
-        system("/etc/init.d/mpd$instance",'restart');
+        system('/etc/init.d/mpd'.$cf{$instance}{instance},'restart');
       }
     }
     if ($o{p}) {
