@@ -47,16 +47,13 @@ while (1) {
         }
         my @pl;
         if (exists $pl{$parm}) { # it's an internal named playlist
-          warn "internal named\n";
           @pl=map {$_->{uri}} $mpd->list_playlist($parm);
         } elsif ($parm =~ /\.m3u$/i) { # it's a playlist file indexed in mpd
-          warn "indexed\n";
           foreach my $track (map {$_->{uri}} $mpd->list_playlist($parm)) {
             $track =~ s/[^\/]+\/\.\.\///g;
             push @pl,$track;
           }
         } else { # it's an individual track
-          warn "track\n";
           @pl=($parm);
         }
         map {$mpd->playlist_add($o{c},$_)} @pl;
