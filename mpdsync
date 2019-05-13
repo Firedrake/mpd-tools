@@ -86,10 +86,12 @@ if (defined $luinstance) {
     }
     if ($o{p}) {
       foreach my $src (keys %cf) {
-        if (@{$cf{$src}{playlist}} && $src ne $instance) {
+        if ($src ne $instance) {
           my $name="mpd.$src";
-          $cf{$instance}{netmpd}->playlist_clear($name);
-          map {$cf{$instance}{netmpd}->playlist_add($name,$_)} @{$cf{$src}{playlist}};
+          $cf{$instance}{netmpd}->rm($name);
+          if (@{$cf{$src}{playlist}}) {
+            map {$cf{$instance}{netmpd}->playlist_add($name,$_)} @{$cf{$src}{playlist}};
+          }
         }
       }
     }
