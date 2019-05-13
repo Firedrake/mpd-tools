@@ -8,8 +8,6 @@ use Getopt::Std;
 use List::Util qw(shuffle min max first);
 use Encode qw(decode);
 
-use YAML::XS;
-
 my %own;
 
 my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
