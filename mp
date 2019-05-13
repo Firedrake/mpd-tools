@@ -110,6 +110,10 @@ while (@ARGV) {
     my $channel=shift @ARGV;
     $mpd->send_message($channel,'"'.join(' ',@ARGV).'"');
     @ARGV=();
+  } elsif ($cmd eq 'update') {
+    my $loc=join(' ',@ARGV);
+    $mpd->update($loc);
+    @ARGV=();
   } elsif ($cmd eq 'vipl') {
     my $pl=shift @ARGV;
     my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;

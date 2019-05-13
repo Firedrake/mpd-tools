@@ -188,6 +188,10 @@ queued.
 
 Example: `mp send robodj start 3`
 
+- update - initiate an update at the named location.
+
+Example: `mp update Popular/New Artist`
+
 - vipl - edit a named playlist (using $VISUAL, $EDITOR or vi, one
   filename per line). If the playlist does not exist it will be
   initialised with the current queue.
