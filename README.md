@@ -188,6 +188,12 @@ queued.
 
 Example: `mp send robodj start 3`
 
+- vipl - edit a named playlist (using $VISUAL, $EDITOR or vi, one
+  filename per line). If the playlist does not exist it will be
+  initialised with the current queue.
+  
+Example: `mp vipl party`
+
 mp will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.
 

@@ -6,6 +6,7 @@ use warnings;
 use Net::MPD;
 use YAML::XS qw(LoadFile DumpFile);
 use Getopt::Std;
+use File::Temp qw(tempfile);
 
 my %o=(h => $ENV{MPD_HOST} || 'localhost',
        p => $ENV{MPD_PORT} || '6600');
@@ -108,6 +109,29 @@ while (@ARGV) {
   } elsif ($cmd eq 'send') {
     my $channel=shift @ARGV;
     $mpd->send_message($channel,'"'.join(' ',@ARGV).'"');
+    @ARGV=();
+  } elsif ($cmd eq 'vipl') {
+    my $pl=shift @ARGV;
+    my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
+    if (!exists $pl{$pl}) {
+      $mpd->save($pl);
+    }
+    my ($fh,$fn)=tempfile;
+    my @c=map {$_->{uri}} $mpd->list_playlist($pl);
+    binmode $fh,':encoding(utf-8)';
+    print $fh map {"$_\n"} @c;
+    close $fh;
+    my $ts=(stat($fn))[9];
+    system($ENV{VISUAL} || $ENV{EDITOR} || 'vi',$fn);
+    if ((stat($fn))[9] != $ts) {
+      $mpd->playlist_clear($pl);
+      open I,'<:encoding(utf-8)',$fn;
+      while (<I>) {
+        chomp;
+        $mpd->playlist_add($pl,$_);
+      }
+    }
+    unlink $fn;
     @ARGV=();
   }
 }
