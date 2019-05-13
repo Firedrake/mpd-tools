@@ -53,8 +53,8 @@ playlist of the same name. While there are convenience commands to
 load existing playlists, you can manipulate the robodj named playlist
 by other means before or after starting this program.
 
-You can send commands using any reasonably capable mpd client library
-or directly with telnet:
+You can send commands using any reasonably capable mpd client library,
+the mp command (below), or directly with telnet:
 
     $ telnet $MPD_HOST $MPD_PORT
     Connected to $MPD_HOST.
@@ -183,6 +183,10 @@ Example: `mp q @mpd.core`
 
 If the player is stopped, it will start playing with the first item
 queued.
+
+- send - send a message to a channel (e.g. to control robodj).
+
+Example: `mp send robodj start 3`
 
 mp will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.

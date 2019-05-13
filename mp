@@ -105,6 +105,10 @@ while (@ARGV) {
     print tabular(\@out);
     DumpFile('/tmp/mp.yaml',\@y);
     @ARGV=();
+  } elsif ($cmd eq 'send') {
+    my $channel=shift @ARGV;
+    $mpd->send_message($channel,'"'.join(' ',@ARGV).'"');
+    @ARGV=();
   }
 }
 
