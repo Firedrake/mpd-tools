@@ -5,131 +5,161 @@ use warnings;
 
 use Net::MPD;
 use Getopt::Std;
-use Cwd qw(abs_path cwd);
 use List::Util qw(shuffle min max first);
 use Encode qw(decode);
+
+use YAML::XS;
 
 my %own;
 
 my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
        p => $ENV{MPD_PORT} || '6600',      # mpdport
-       f => '/audio/',                     # strip filename to mpd root
+       c => 'robodj',                      # control channel and playlist
        n => 3,                             # maintain this queue
-       s => 10,                            # similarity window
+       s => 10,                            # queue window
        w => 20,                            # playlist window
          );
 
-getopts('h:p:f:n:i:s:w:v',\%o);
-
-unless ($o{f} =~ /\/$/) {
-  $o{f}.='/';
-}
+getopts('h:p:c:n:s:w:v',\%o);
 
 my $mpd=Net::MPD->connect("$o{h}:$o{p}") or die "no connect";
 
-my @playlist;
+$mpd->subscribe($o{c});
 
-foreach my $plfile (@ARGV) {
-  if (-e $plfile) {
-    open I,'<:encoding(utf-8)',$plfile or next;
-    binmode I;
-    (my $pldir=$plfile) =~ s/\/[^\/]*$//;
-    unless ($pldir) {
-      $pldir=cwd;
-    }
-    while (<I>) {
-      chomp;
-      my $file=abs_path(join('/',$pldir,$_));
-      $file =~ s/^.*?$o{f}//;
-      push @playlist,decode('UTF-8',$file) || $file;
-    }
-    close I;
-  } elsif ($plfile =~ /^@(.*)/) {
-    push @playlist,map {$_->{uri}} grep {$_->{type} eq 'file'} $mpd->list_playlist($1);
-  }
-}
-@playlist=shuffle @playlist;
-if ($o{v}) {
-  warn "Loaded ".scalar(@playlist)." items\n";
-}
+my @playlist;
+my $playing=0;
 
 my $status;
 
 while (1) {
+  my %ss=map {$_=> 1} $mpd->idle(qw(player playlist message));
   $status=$mpd->update_status;
-  if ($status->{state} eq 'stop') {
-    addpl(0);
-  } else {
-    my $dirty=0;
-    my @p=$mpd->playlist_info;
-    { # remove my ownership mark from any song no longer on the playlist
-      my %aid=map {$_->{Id} => 1} @p;
-      foreach my $o (keys %own) {
-        unless (exists $aid{$o}) {
-          delete $own{$o};
-        }
-      }
-    }
-    {                           # how many queued songs are there
-      my @requeue;
-      my @myid;
-      my $q=0;
-      foreach my $queued (map {$p[$_]} $status->{song}+1 .. $#p) {
-        $q++;
-        if (exists $own{$queued->{Id}}) {
-          push @myid,$queued;
-        } else {
-          push @requeue,map {$_->{uri}} @myid;
-          map {$mpd->delete_id($_->{Id});delete $own{$_->{Id}}} @myid;
-          @myid=();
-        }
-      }
-      if (@requeue) {
-        $dirty=1;
-        map {$own{$mpd->add_id($_)}=1} @requeue;
-      }
-      if ($o{v}) {
-        warn "$q future song(s)\n";
-      }
-      if ($q < $o{n} && (scalar @requeue)==0) { # add a song
-        my @pl=@p;
-        if (scalar @pl > $o{s}) {
-          splice @pl,-$o{s};
-        }
-        my %q=map {$_->{uri}=>1} @p;
-        my @uri=map {[split '/',$_->{uri}]} @pl;
-        my %score;
-        my $candidate=-1;
-        while (1) {
-          $candidate++;
-          if ($candidate>=$o{w} || $candidate > $#playlist) {
-            last;
+  my $shuffle=0;
+  if (exists $ss{message}) {
+    foreach my $m ($mpd->read_messages) {
+      my ($cmd,$parm)=split ' ',$m->{message},2;
+      $parm ||= '';
+      $cmd=lc($cmd);
+      my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
+      if ($cmd eq 'load' || $cmd eq 'add') {
+        if ($cmd eq 'load') {
+          if (exists $pl{$o{c}}) {
+            $mpd->rm($o{c});
           }
-          if (exists $q{$playlist[$candidate]}) {
-            next;
-          }
-          my $ci=[split '/',$playlist[$candidate]];
-          my $score=0;
-          my $kk=1;
-          foreach my $ple (@uri) {
-            $score+=similarity($ple,$ci)*$kk;
-            $kk++;
-          }
-          if ($o{v}) {
-            print $score,' ',substr($playlist[$candidate],-70),"\n";
-          }
-          push @{$score{$score}},$candidate;
         }
-        my $k=min(keys %score);
-        addpl($score{$k}[0]);
-        $dirty=1;
+        my @pl;
+        if (exists $pl{$parm}) { # it's an internal named playlist
+          warn "internal named\n";
+          @pl=map {$_->{uri}} $mpd->list_playlist($parm);
+        } elsif ($parm =~ /\.m3u$/i) { # it's a playlist file indexed in mpd
+          warn "indexed\n";
+          foreach my $track (map {$_->{uri}} $mpd->list_playlist($parm)) {
+            $track =~ s/[^\/]+\/\.\.\///g;
+            push @pl,$track;
+          }
+        } else { # it's an individual track
+          warn "track\n";
+          @pl=($parm);
+        }
+        map {$mpd->playlist_add($o{c},$_)} @pl;
+      } elsif ($cmd eq 'clear' || $cmd eq 'die') {
+        foreach my $queued ($mpd->playlist_info) {
+          if (exists $own{$queued->{Id}}) {
+            $mpd->delete_id($queued->{Id});
+          }
+        }
+        if ($cmd eq 'die') {
+          exit 0;
+        }
+        undef %own;
+        $playing=0;
+      } elsif ($cmd eq 'stop') {
+        $playing=0;
+      } elsif ($cmd eq 'window' && $parm =~ /([0-9]+)\s*\/\s*([0-9]+)/) {
+        ($o{s},$o{w})=($1,$2);
+      } elsif ($cmd eq 'start') {
+        if ($parm =~ /([0-9]+)/) {
+          $o{n}=$1;
+        }
+        $playing=1;
       }
-    }
-    if ($dirty) { # at least one change to the queue was needed, so…
-      next;
     }
   }
-  $mpd->idle(qw(player playlist));
+  if ($playing) {
+    if ($status->{state} eq 'stop') {
+      @playlist=map {$_->{uri}} $mpd->list_playlist($o{c});
+      addpl(int(rand()*scalar @playlist));
+    } else {
+      my $dirty=0;
+      my @p=$mpd->playlist_info;
+      { # remove my ownership mark from any song no longer on the playlist
+        my %aid=map {$_->{Id} => 1} @p;
+        foreach my $o (keys %own) {
+          unless (exists $aid{$o}) {
+            delete $own{$o};
+          }
+        }
+      }
+      {                         # how many queued songs are there
+        my @myid;
+        my $q=0;
+        my $other=0;
+        foreach my $queued (map {$p[$_]} $status->{song}+1 .. $#p) {
+          $q++;
+          if (exists $own{$queued->{Id}}) {
+            push @myid,$queued;
+          } elsif (@myid) {
+            $other++;
+          }
+        }
+        if ($o{v}) {
+          warn scalar(@myid)."/$q owned, $other not owned\n";
+        }
+        if ($other) {
+          $dirty=1;
+          foreach my $queued (@myid) {
+            $mpd->move_id($queued->{Id},$#p);
+          }
+        }
+        if ($o{v}) {
+          warn "$q future song(s)\n";
+        }
+        if ($q < $o{n}) { # add a song
+          @playlist=map {$_->{uri}} $mpd->list_playlist($o{c});
+          my @pl=@p;
+          if (scalar @pl > $o{s}) {
+            splice @pl,-$o{s};
+          }
+          my %q=map {$_->{uri}=>1} @p;
+          my @uri=map {[split '/',$_->{uri}]} @pl;
+          my %score;
+          foreach (1..$o{w}) {
+            my $candidate=int(rand()*scalar @playlist);
+            if (exists $q{$playlist[$candidate]}) {
+              next;
+            }
+            my $ci=[split '/',$playlist[$candidate]];
+            my $score=0;
+            my $kk=1;
+            foreach my $ple (@uri) {
+              $score+=similarity($ple,$ci)*$kk;
+              $kk++;
+            }
+            if ($o{v}) {
+              print $score,' ',substr($playlist[$candidate],-70),"\n";
+            }
+            push @{$score{$score}},$candidate;
+          }
+          my $k=min(keys %score);
+          addpl($score{$k}[0]);
+          $dirty=1;
+        }
+      }
+      if ($dirty) { # at least one change to the queue was needed, so…
+        next;
+      }
+    }
+  }
 }
 
 sub addpl {
@@ -139,12 +169,11 @@ sub addpl {
     warn "Adding $uri...\n";
   }
   my $mid=$mpd->add_id($uri);
+  $mpd->playlist_move($o{c},$ix,$#playlist);
   if ($status->{state} eq 'stop') {
     $mpd->play_id($mid);
   }
   $own{$mid}=1;
-  splice @playlist,$ix,1;
-  push @playlist,$uri;
 }
 
 sub similarity {

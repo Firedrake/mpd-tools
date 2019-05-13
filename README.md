@@ -46,19 +46,45 @@ named playlist called mpd.core.)
 
 This is a random queue filler for mpd. Run as:
 
-`robodj [options] /path/to/playlist.m3u (/path/to/playlist.m3u...)`
+`robodj [options]`
 
-The playlist file may contain relative or absolute paths. These will be
-canonicalised, and anything before the value of the -f option stripped
-off before the item is fed to MPD. So if your MPD music path is
-/storage/audio/, use `-f /audio/`.
+It is controlled by an MPD channel (default "robodj") and uses a
+playlist of the same name. While there are convenience commands to
+load existing playlists, you can manipulate the robodj named playlist
+by other means before or after starting this program.
 
-You may also use `@name` to incorporate the contents of an existing
-named playlist.
+You can send commands using any reasonably capable mpd client library
+or directly with telnet:
 
-Both playlist files and named playlists are read only once; if they
-are changed after robodj has started, this will not be reflected in
-the operation of the program.
+    $ telnet $MPD_HOST $MPD_PORT
+    Connected to $MPD_HOST.
+    Escape character is '^]'.
+    OK MPD 0.19.0
+    sendmessage robodj "start 3"
+    OK
+
+Commands are:
+
+load (name): clear the robodj named playlist and set its contents to
+an existing playlist or single track. You can use an existing named
+playlist, an .m3u playlist which mpd has indexed, or an individual
+track filename.
+
+add (name): as load, but does not clear the named playlist first.
+
+window (a/b): set the similarity window (see -s and -w parameters below)
+
+start [n]: start adding tracks to the queue, maintaining a minimum of
+n (see -n parameter below).
+
+stop: cease adding songs to the queue, but remain ready to follow
+commands.
+
+clear: as stop, but deletes all songs that it has already added to the
+queue. (If this includes the currently-playing song, playback will
+stop.)
+
+die: as clear, but the program then exits.
 
 The robodj keeps track of the items it has added to the queue, and if
 it sees future tracks that it did not add itself, it will move all of
@@ -66,17 +92,17 @@ its tracks to the end of the queue.
 
 When it chooses a new track to add, the robodj will look at the last
 few (by default ten) tracks played, and a selection (by default 20) of
-the tracks in the playlist file, and try to pick one that's relatively
-unlike the recent tracks (based on filename components).
+the tracks in its own named playlist, and try to pick one that's
+relatively unlike the recent tracks (based on filename components).
 
 It will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.
 
 - -h: MPD host
 - -p: MPD port
-- -f: final component of mpd music path
+- -c: use this name for channel and playlist
 - -n: keep the future queue at least this long
-- -s: check this many playlist file tracks for similarity
+- -s: check this many named playlist tracks for similarity
 - -w: check this many recently-played tracks for similarity
 - -v: be verbose
 
@@ -129,6 +155,11 @@ Basic commands are:
 - clear - clear the queue (and stop playing)
 - clean - delete from the queue everything before the current track
 - crop - delete from the queue everything after the current track
+- (no)single - turn single mode on or off
+- (no)repeat - turn repeat mode on or off
+- (no)random - turn random mode on or off
+- (no)consume - turn consume mode on or off
+- (no)crossfade - turn crossfade mode on or off
 
 The advanced commands are:
 
