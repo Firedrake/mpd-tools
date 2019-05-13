@@ -65,5 +65,9 @@ foreach my $plfile (@ARGV) {
 }
 
 foreach (@playlist) {
-  $mpd->playlist_add($o{n},$_);
+  my $id=$mpd->playlist_add($o{n},$_);
+  my $s=$mpd->update_status;
+  if (exists $s->{error} && defined $s->{error}) {
+    die $s->{error}."\n";
+  }
 }
