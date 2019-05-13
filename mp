@@ -56,6 +56,16 @@ while (@ARGV) {
     $mpd->pause(0);
   } elsif ($cmd eq 'restart') {
     $mpd->seek($s->{song},0);
+  } elsif ($cmd =~ /^(no)?single$/i) {
+    $mpd->single((defined $1)?0:1);
+  } elsif ($cmd =~ /^(no)?repeat$/i) {
+    $mpd->repeat((defined $1)?0:1);
+  } elsif ($cmd =~ /^(no)?random$/i) {
+    $mpd->random((defined $1)?0:1);
+  } elsif ($cmd =~ /^(no)?consume$/i) {
+    $mpd->consume((defined $1)?0:1);
+  } elsif ($cmd =~ /^(no)?crossfade$/i) {
+    $mpd->crossfade((defined $1)?0:1);
   } elsif ($cmd eq 'q' && -e '/tmp/mp.yaml') {
     my $id='all';
     if (@ARGV) {
