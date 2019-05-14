@@ -160,6 +160,7 @@ Basic commands are:
 - (no)random - turn random mode on or off
 - (no)consume - turn consume mode on or off
 - (no)crossfade - turn crossfade mode on or off
+- rmpl (playlistname) - delete a named playlist
 
 The advanced commands are:
 

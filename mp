@@ -114,6 +114,12 @@ while (@ARGV) {
     my $loc=join(' ',@ARGV);
     $mpd->update($loc);
     @ARGV=();
+  } elsif ($cmd eq 'rmpl') {
+    my $pl=shift @ARGV;
+    my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
+    if (exists $pl{$pl}) {
+      $mpd->rm($pl);
+    }
   } elsif ($cmd eq 'vipl') {
     my $pl=shift @ARGV;
     my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
