@@ -189,7 +189,8 @@ queued.
 
 Example: `mp send robodj start 3`
 
-- update - initiate an update at the named location.
+- update - initiate an update at the named location. If an update is
+  already in progress, mp will wait until it completes.
 
 Example: `mp update Popular/New Artist`
 

@@ -111,6 +111,10 @@ while (@ARGV) {
     $mpd->send_message($channel,'"'.join(' ',@ARGV).'"');
     @ARGV=();
   } elsif ($cmd eq 'update') {
+    if ($s->{updating_db}) {
+      warn "Waiting for an update to finish.\n";
+      $mpd->idle('update');
+    }
     my $loc=join(' ',@ARGV);
     $mpd->update($loc);
     @ARGV=();
