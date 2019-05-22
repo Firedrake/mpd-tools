@@ -35,7 +35,11 @@ while (1) {
   my $shuffle=0;
   if (exists $ss{message}) {
     foreach my $m ($mpd->read_messages) {
+      $m->{message} =~ s/^"*(.*)"*$/$1/;
       my ($cmd,$parm)=split ' ',$m->{message},2;
+      if ($o{v}) {
+        warn ">$cmd $parm\n";
+      }
       $parm ||= '';
       $cmd=lc($cmd);
       my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
