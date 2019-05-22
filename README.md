@@ -159,6 +159,10 @@ Basic commands are:
 - clear - clear the queue (and stop playing)
 - clean - delete from the queue everything before the current track
 - crop - delete from the queue everything after the current track
+- q - show the queue (human-readable form)
+- qf - show the queue (filenames only)
+- viq - edit the queue (using $VISUAL, $EDITOR or vi, one filename per
+  line)
 - (no)single - turn single mode on or off
 - (no)repeat - turn repeat mode on or off
 - (no)random - turn random mode on or off
@@ -174,17 +178,16 @@ The advanced commands are:
 
 Example: `mp search wish you were here`
 
-- q - queue a URI, a search result or a named playlist. For a URI,
+- qs - queue a URI, a search result or a named playlist. For a URI,
   append a single URI in a form that mpd will recognise. For search
   results, append one or more numbers as shown in the results of
-  "search", or no parameter at all for all search results. A named
-  playlist should be prefixed with @.
+  "search", or no parameter at all for all search results.
 
-Example: `mp q 7`
+Example: `mp qs 7`
 
-Example: `mp q "Popular/Blackmore's Night/1997 Shadow of the Moon/15 Wish You Were Here.ogg"`
+Example: `mp qs "Popular/Blackmore's Night/1997 Shadow of the Moon/15 Wish You Were Here.ogg"`
 
-Example: `mp q @mpd.core`
+Example: `mp qs mpd.core`
 
 If the player is stopped, it will start playing with the first item
 queued.

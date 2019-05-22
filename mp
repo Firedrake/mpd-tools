@@ -15,9 +15,10 @@ getopts('h:p:q',\%o);
 my $mpd=Net::MPD->connect("$o{h}:$o{p}");
 
 my @p=$mpd->playlist_info;
+my $c;
 my $s=$mpd->update_status;
 if (!exists $o{q} && $s->{state} eq 'play') {
-  my $c=$mpd->current_song;
+  $c=$mpd->current_song;
   my $st=join(' = ',grep /./,map {$c->{$_} || ''} qw(Album Track Artist Title));
   $st ||= $c->{uri};
   print "$st\n";
@@ -67,12 +68,54 @@ while (@ARGV) {
     $mpd->consume((defined $1)?0:1);
   } elsif ($cmd =~ /^(no)?crossfade$/i) {
     $mpd->crossfade((defined $1)?0:1);
-  } elsif ($cmd eq 'q' && -e '/tmp/mp.yaml') {
+  } elsif ($cmd eq 'p') {
+    if ($ARGV[0] =~ /^[0-9]+$/) {
+      $mpd->play(shift @ARGV);
+    } else {
+      $mpd->play;
+    }
+  } elsif ($cmd eq 'q') {
+    my @q=map {[$_->{Title},$_->{Artist}]} @p;
+    print tabular(\@q);
+  } elsif ($cmd eq 'qf') {
+    my @q=map {$_->{uri}} @p;
+    print map{"$_\n"} @q; 
+  } elsif ($cmd eq 'viq') {
+    my ($fh,$fn)=tempfile;
+    my %pm=map {$_->{Id} => $_->{Pos}} @p;
+    binmode $fh,':encoding(utf-8)';
+    print $fh map {$_->{Id}."\t".$_->{uri}."\n"} @p;
+    close $fh;
+    my $ts=(stat($fn))[9];
+    system($ENV{VISUAL} || $ENV{EDITOR} || 'vi',$fn);
+    if ((stat($fn))[9] != $ts) {
+      my %pmn;
+      open I,'<:encoding(utf-8)',$fn;
+      my $pos=0;
+      while (<I>) {
+        chomp;
+        my ($id,$junk)=split /\t/,$_;
+        $pmn{$id}=$pos;
+        $pos++;
+      }
+      foreach my $id (keys %pm) {
+        if (exists $pmn{$id}) {
+          if ($pm{$id} != $pmn{$id}) {
+            $mpd->move_id($id,$pmn{$id});
+          }
+        } else {
+          $mpd->delete_id($id);
+        }
+      }
+    }
+    unlink $fn;
+ } elsif ($cmd eq 'qs' && -e '/tmp/mp.yaml') {
     my $id='all';
     if (@ARGV) {
       $id=shift @ARGV;
     }
     my $pi;
+    my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
     if ($id eq 'all' || $id =~ /^[0-9]+$/) {
       my $y=LoadFile('/tmp/mp.yaml') || [];
       my @p=@{$y};
@@ -82,10 +125,9 @@ while (@ARGV) {
       my @i;
       map {push @i,$mpd->add_id($_)} @p;
       $pi=$i[0];
-    } elsif ($id =~ /^@(.+)/) {
-      my $name=$1;
-      my @s=$mpd->list_playlist($name);
-      $mpd->load($name);
+    } elsif (exists $pl{$id}) {
+      my @s=$mpd->list_playlist($id);
+      $mpd->load($id);
       my @p=$mpd->playlist_info;
       $pi=$p[-scalar @s]{Id};
     } else {
