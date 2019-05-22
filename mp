@@ -124,6 +124,23 @@ while (@ARGV) {
     if (exists $pl{$pl}) {
       $mpd->rm($pl);
     }
+  } elsif ($cmd eq 'addpl') {
+    my $pl=shift @ARGV;
+    my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
+    my $in=join(' ',@ARGV);
+    my @pl;
+    if (exists $pl{$in}) {      # it's an internal named playlist
+      @pl=map {$_->{uri}} $mpd->list_playlist($in);
+    } elsif ($in =~ /\.m3u$/i) { # it's a playlist file indexed in mpd
+      foreach my $track (map {$_->{uri}} $mpd->list_playlist($in)) {
+        $track =~ s/[^\/]+\/\.\.\///g;
+        push @pl,$track;
+      }
+    } else {                    # it's an individual track/directory
+      @pl=($in);
+    }
+    map {$mpd->playlist_add($pl,$_)} @pl;
+    @ARGV=();
   } elsif ($cmd eq 'vipl') {
     my $pl=shift @ARGV;
     my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;

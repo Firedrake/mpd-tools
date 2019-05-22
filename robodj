@@ -35,8 +35,9 @@ while (1) {
   my $shuffle=0;
   if (exists $ss{message}) {
     foreach my $m ($mpd->read_messages) {
-      $m->{message} =~ s/^"*(.*)"*$/$1/;
+      $m->{message} =~ s/^"*(.*?)"*$/$1/;
       my ($cmd,$parm)=split ' ',$m->{message},2;
+      $parm ||= '';
       if ($o{v}) {
         warn ">$cmd $parm\n";
       }
@@ -57,7 +58,7 @@ while (1) {
             $track =~ s/[^\/]+\/\.\.\///g;
             push @pl,$track;
           }
-        } else { # it's an individual track
+        } else { # it's an individual track/directory
           @pl=($parm);
         }
         map {$mpd->playlist_add($o{c},$_)} @pl;
@@ -91,7 +92,7 @@ while (1) {
     } else {
       my $dirty=0;
       my @p=$mpd->playlist_info;
-      { # remove my ownership mark from any song no longer on the playlist
+      { # remove my ownership mark from any track no longer on the playlist
         my %aid=map {$_->{Id} => 1} @p;
         foreach my $o (keys %own) {
           unless (exists $aid{$o}) {
@@ -99,11 +100,11 @@ while (1) {
           }
         }
       }
-      {                         # how many queued songs are there
+      {                         # how many queued tracks are there
         my @myid;
         my $q=0;
         my $other=0;
-        foreach my $queued (map {$p[$_]} $status->{song}+1 .. $#p) {
+        foreach my $queued (map {$p[$_]} $status->{track}+1 .. $#p) {
           $q++;
           if (exists $own{$queued->{Id}}) {
             push @myid,$queued;
@@ -121,9 +122,9 @@ while (1) {
           }
         }
         if ($o{v}) {
-          warn "$q future song(s)\n";
+          warn "$q future track(s)\n";
         }
-        if ($q < $o{n}) { # add a song
+        if ($q < $o{n}) { # add a track
           @playlist=map {$_->{uri}} $mpd->list_playlist($o{c});
           my @pl=@p;
           if (scalar @pl > $o{s}) {

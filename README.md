@@ -68,7 +68,7 @@ Commands are:
 load (name): clear the robodj named playlist and set its contents to
 an existing playlist or single track. You can use an existing named
 playlist, an .m3u playlist which mpd has indexed, or an individual
-track filename.
+track or directory filename.
 
 add (name): as load, but does not clear the named playlist first.
 
@@ -107,6 +107,10 @@ command line parameters.
 - -v: be verbose
 
 # loadplaylist
+
+MOSTLY OBSOLETE. mp's "addpl" command will do the same thing, except
+that loadplaylist retains the ability to load .m3u playlist files not
+already indexed by the mpd server.
 
 This takes a playlist file and creates a named playlist with matching
 contents.
@@ -199,6 +203,13 @@ Example: `mp update Popular/New Artist`
   initialised with the current queue.
   
 Example: `mp vipl party`
+
+- addpl - add to a named playlist (which need not exist) the contents
+  of another named playlist, an indexed playlist file, or an
+  individual directory or track - as with robodj's "load" and "add"
+  commands.
+  
+Example: `mp addpl party Popular/The Flaming Ghoulies`
 
 mp will respect MPD_HOST and MPD_PORT environment variables, or
 command line parameters.
