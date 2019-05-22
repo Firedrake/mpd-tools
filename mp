@@ -109,14 +109,14 @@ while (@ARGV) {
       }
     }
     unlink $fn;
- } elsif ($cmd eq 'qs' && -e '/tmp/mp.yaml') {
+ } elsif ($cmd eq 'qs') {
     my $id='all';
     if (@ARGV) {
       $id=shift @ARGV;
     }
     my $pi;
     my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;
-    if ($id eq 'all' || $id =~ /^[0-9]+$/) {
+    if (-e '/tmp/mp.yaml' && ($id eq 'all' || $id =~ /^[0-9]+$/)) {
       my $y=LoadFile('/tmp/mp.yaml') || [];
       my @p=@{$y};
       if ($id =~ /^[0-9]+$/) {
