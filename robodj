@@ -97,6 +97,7 @@ while (1) {
         foreach my $o (keys %own) {
           unless (exists $aid{$o}) {
             delete $own{$o};
+            next;
           }
         }
       }
@@ -104,12 +105,14 @@ while (1) {
         my @myid;
         my $q=0;
         my $other=0;
-        foreach my $queued (map {$p[$_]} $status->{track}+1 .. $#p) {
-          $q++;
-          if (exists $own{$queued->{Id}}) {
-            push @myid,$queued;
-          } elsif (@myid) {
-            $other++;
+        if ($status->{song}) {
+          foreach my $queued (map {$p[$_]} $status->{song}+1 .. $#p) {
+            $q++;
+            if (exists $own{$queued->{Id}}) {
+              push @myid,$queued;
+            } elsif (@myid) {
+              $other++;
+            }
           }
         }
         if ($o{v}) {
