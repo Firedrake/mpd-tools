@@ -6,7 +6,7 @@ tested only on Linux.
 
 They are released under GPL v3.
 
-A terminological consideration: I distinguisn in this document between
+A terminological consideration: I distinguish in this document between
 
 - the QUEUE, the list of tracks through which mpd will play. (This is
   sometimes referred to in mpd documentation as "the playlist".)
