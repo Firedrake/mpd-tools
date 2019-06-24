@@ -105,7 +105,7 @@ while (1) {
         my @myid;
         my $q=0;
         my $other=0;
-        if ($status->{song}) {
+        if (exists $status->{song}) {
           foreach my $queued (map {$p[$_]} $status->{song}+1 .. $#p) {
             $q++;
             if (exists $own{$queued->{Id}}) {
@@ -172,9 +172,13 @@ sub addpl {
     warn "Adding $uri...\n";
   }
   my $mid=$mpd->add_id($uri);
+  if ($o{v}) {
+    warn "id $mid...\n";
+  }
   $mpd->playlist_move($o{c},$ix,$#playlist);
   if ($status->{state} eq 'stop') {
     $mpd->play_id($mid);
+    sleep 1;
   }
   $own{$mid}=1;
 }
