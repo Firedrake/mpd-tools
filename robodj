@@ -16,9 +16,10 @@ my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
        n => 3,                             # maintain this queue
        s => 10,                            # queue window
        w => 20,                            # playlist window
+       a => -1,                            # autoclean window
          );
 
-getopts('h:p:c:n:s:w:v',\%o);
+getopts('h:p:c:n:s:w:a:v',\%o);
 
 my $mpd=Net::MPD->connect("$o{h}:$o{p}") or die "no connect";
 
@@ -77,6 +78,8 @@ while (1) {
         $playing=0;
       } elsif ($cmd eq 'window' && $parm =~ /([0-9]+)\s*\/\s*([0-9]+)/) {
         ($o{s},$o{w})=($1,$2);
+      } elsif ($cmd eq 'autoclean' && $parm =~ /([0-9]+)/) {
+        $o{a}=$1;
       } elsif ($cmd eq 'start') {
         if ($parm =~ /([0-9]+)/) {
           $o{n}=$1;
@@ -106,6 +109,19 @@ while (1) {
         my $q=0;
         my $other=0;
         if (exists $status->{song}) {
+          if ($o{a}>-1) {
+            my @prev;
+            foreach my $previous (map {$p[$_]} 0 .. $status->{song}-1) {
+              if (exists $own{$previous->{Id}}) {
+                push @prev,$previous->{Id};
+              }
+            }
+            if (scalar @prev > $o{a}) {
+              splice @prev,-$o{a};
+            map {$mpd->delete_id($_)} @prev;
+            map {delete $own{$_}} @prev;
+            }
+          }
           foreach my $queued (map {$p[$_]} $status->{song}+1 .. $#p) {
             $q++;
             if (exists $own{$queued->{Id}}) {
