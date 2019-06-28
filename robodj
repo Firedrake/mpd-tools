@@ -64,6 +64,9 @@ while (1) {
         }
         map {$mpd->playlist_add($o{c},$_)} @pl;
       } elsif ($cmd eq 'clear' || $cmd eq 'die') {
+        if ($status->{state} ne 'stop') {
+          delete $own{$status->{songid}};
+        }
         foreach my $queued ($mpd->playlist_info) {
           if (exists $own{$queued->{Id}}) {
             $mpd->delete_id($queued->{Id});

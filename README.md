@@ -85,8 +85,8 @@ stop: cease adding songs to the queue, but remain ready to follow
 commands.
 
 clear: as stop, but deletes all songs that it has already added to the
-queue. (If this includes the currently-playing song, playback will
-stop.)
+queue. (The currently-playing song will be excepted from this
+deletion.)
 
 die: as clear, but the program then exits.
 
