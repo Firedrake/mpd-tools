@@ -52,6 +52,33 @@ while (@ARGV) {
     } else {
       $mpd->clear;
     }
+  } elsif ($cmd eq 'cropto') {
+    if (exists $s->{song}) {
+      my $t=shift @ARGV;
+      my @t=localtime;
+      $t =~ /([0-9][0-9])([0-9][0-9])([0-9][0-9])?/;
+      my $dt=($1-$t[2])*3600+($2-$t[1])*60+(($3 || 0)-$t[0]);
+      while ($dt<0) {
+        $dt+=86400;
+      }
+      my @a=split ':',$s->{time};
+      my $acc=$a[1]-$a[0]; # time to end of current track
+      my @pl=map {$_->{Id}} @p;
+      splice @pl,0,$s->{song}+1; # all future tracks
+      while ($acc <= $dt && @pl) {
+        my $si=$mpd->playlist_id($pl[0]);
+        $acc+=$si->{duration};
+        if ($acc <= $dt) {
+          shift @pl;
+        }
+      }
+      if (@pl) {
+        map {$mpd->delete_id($_)} @pl;
+      }
+    } else {
+      $mpd->clear;
+    }
+    @ARGV=();
   } elsif ($cmd eq 'pause') {
     $mpd->pause(1);
   } elsif ($cmd eq 'resume') {
@@ -109,7 +136,7 @@ while (@ARGV) {
       }
     }
     unlink $fn;
- } elsif ($cmd eq 'qs') {
+  } elsif ($cmd eq 'qs') {
     my $id='all';
     if (@ARGV) {
       $id=shift @ARGV;
@@ -158,10 +185,12 @@ while (@ARGV) {
       $mpd->idle('update');
     }
     my $loc=join(' ',@ARGV);
-    if ($loc) {
+    if ($loc eq '/') {
+      $mpd->update();
+    } elsif ($loc) {
       $mpd->update($loc);
     } else {
-      warn "This program does not do full database updates.\n";
+      warn "For full database update, send mp update /.\n";
     }
     @ARGV=();
   } elsif ($cmd eq 'rmpl') {

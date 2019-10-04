@@ -202,9 +202,16 @@ queued.
 Example: `mp send robodj start 3`
 
 - update - initiate an update at the named location. If an update is
-  already in progress, mp will wait until it completes.
+  already in progress, mp will wait until it completes. mp will NOT
+  perform a full database update unless you give the parameter "/".
 
 Example: `mp update Popular/New Artist`
+
+- cropto - crop the playlist such that it will have ended by a
+  specific time. Takes HHMM or HHMMSS as sole parameter. It will NOT
+  stop the current track if that would go past the specified time.
+
+Example: `mp cropto 2300`
 
 - vipl - edit a named playlist (using $VISUAL, $EDITOR or vi, one
   filename per line). If the playlist does not exist it will be
