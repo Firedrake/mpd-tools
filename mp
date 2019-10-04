@@ -158,7 +158,11 @@ while (@ARGV) {
       $mpd->idle('update');
     }
     my $loc=join(' ',@ARGV);
-    $mpd->update($loc);
+    if ($loc) {
+      $mpd->update($loc);
+    } else {
+      warn "This program does not do full database updates.\n";
+    }
     @ARGV=();
   } elsif ($cmd eq 'rmpl') {
     my $pl=shift @ARGV;
