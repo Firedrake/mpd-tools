@@ -159,7 +159,8 @@ Basic commands are:
 - next - skip to the next track
 - prev - skip to the previous track
 - pause - pause play
-- resume - resume after a pause
+- play - start playing
+- resume - resume after a pause (also "unpause")
 - restart - start the current track again from the beginning
 - clear - clear the queue (and stop playing)
 - clean - delete from the queue everything before the current track

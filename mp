@@ -81,8 +81,10 @@ while (@ARGV) {
     @ARGV=();
   } elsif ($cmd eq 'pause') {
     $mpd->pause(1);
-  } elsif ($cmd eq 'resume') {
+  } elsif ($cmd eq 'resume' || $cmd eq 'unpause') {
     $mpd->pause(0);
+  } elsif ($cmd eq 'play') {
+    $mpd->play;
   } elsif ($cmd eq 'restart') {
     $mpd->seek($s->{song},0);
   } elsif ($cmd =~ /^(no)?single$/i) {
