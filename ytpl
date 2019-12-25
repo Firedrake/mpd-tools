@@ -7,6 +7,7 @@ use Net::MPD;
 use Getopt::Std;
 use LWP::Simple;
 use JSON;
+use List::Util qw(shuffle);
 
 my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
        p => $ENV{MPD_PORT} || '6600',      # mpdport
@@ -14,8 +15,9 @@ my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
        w => 'Youtube-Cache',    # working directory within mpd root
        t => 300,                # refresh threshold
          );
+# s = shuffle
 
-getopts('h:p:d:w:t:',\%o);
+getopts('h:p:d:w:t:s',\%o);
 
 umask 022;
 
@@ -45,6 +47,9 @@ foreach my $url (@ARGV) {
   }
 }
 
+if ($o{s}) {
+  @ytid=shuffle @ytid;
+}
 print join(' ',@ytid),"\n";
 unless (@ytid) {
   die "Specify at least one melodice/YouTube playlist URL, YouTube video URL, or YouTube video ID\n";
@@ -111,5 +116,9 @@ while (1) {
       sleep 10;
     }
   }
-  push @yy,@ytid;
+  if ($o{s}) {
+    push @yy,shuffle @ytid;
+  } else {
+    push @yy,@ytid;
+  }
 }

@@ -249,6 +249,7 @@ command line parameters.
 - -d: path to mpd's audio root
 - -w: path within audio root to working directory
 - -t: timeout (default 300 seconds)
+- -s: shuffle playlist each cycle
 
 It will try to keep a minimum of (timeout) seconds of music cued up,
 by downloading the next video in the playlist, storing it in mpd's
