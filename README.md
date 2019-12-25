@@ -1,8 +1,8 @@
 # Roger's tools for MPD
 
 These are written in perl and will need non-core modules as shown -
-Net::MPD in all cases, and for "mp" also YAML::XS. They have been
-tested only on Linux.
+Net::MPD in all cases, for "mp" also YAML::XS, and for "ytpl" also
+JSON. They have been tested only on Debian Linux.
 
 They are released under GPL v3.
 
@@ -233,3 +233,25 @@ command line parameters.
 - -h: MPD host
 - -p: MPD port
 - -q: don't show the currently-playing track
+
+# ytpl
+
+This will feed your mpd instance with the contents of a YouTube (or
+Melodice) playlist, downloaded as audio files. It will require a
+working copy of [youtube-dl](https://youtube-dl.org/) and write access
+to your mpd server's music store.
+
+ytpl will respect MPD_HOST and MPD_PORT environment variables, or
+command line parameters.
+
+- -h: MPD host
+- -p: MPD port
+- -d: path to mpd's audio root
+- -w: path within audio root to working directory
+- -t: timeout (default 300 seconds)
+
+It will try to keep a minimum of (timeout) seconds of music cued up,
+by downloading the next video in the playlist, storing it in mpd's
+archive, doing a microupdate to make sure it's queueable, and queueing
+it. If a file matching that YouTube ID has already been downloaded to
+the relevant directory, it'll simply use that instead.
