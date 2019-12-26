@@ -8,6 +8,7 @@ use Getopt::Std;
 use LWP::Simple;
 use JSON;
 use List::Util qw(shuffle);
+use Encode;
 
 my %o=(h => $ENV{MPD_HOST} || 'localhost', # mpdhost
        p => $ENV{MPD_PORT} || '6600',      # mpdport
@@ -61,7 +62,7 @@ my %cache;
   opendir D,$o{d}.'/'.$o{w};
   foreach my $file (grep /Youtube_/,readdir D) {
     $file =~ /Youtube_([-_A-Za-z0-9]+)\.[A-Za-z0-9]*$/;
-    $cache{$1}=$file;
+    $cache{$1}=$o{w}.'/'.decode('utf-8',$file);
   }
   closedir D;
 }
@@ -92,13 +93,13 @@ while (1) {
         system(@cmd,"https://youtube.com/watch?v=$id");
         opendir D,$o{d}.'/'.$o{w};
         foreach my $file (grep /Youtube_$id/,readdir D) {
-          $cache{$id}=$file;
+          $cache{$id}=$o{w}.'/'.decode("utf-8",$file);
           $s=$mpd->update_status;
           while ($s->{updating_db}) {
             $mpd->idle('update');
             $s=$mpd->update_status;
           }
-          $mpd->update($o{w}.'/'.$cache{$id});
+          $mpd->update($cache{$id});
         }
         closedir D;
       }
@@ -108,7 +109,7 @@ while (1) {
           $mpd->idle('update');
           $s=$mpd->update_status;
         }
-        $mpd->add($o{w}.'/'.$cache{$id});
+        $mpd->add($cache{$id});
         if ($s->{state} eq 'stop') {
           $mpd->play;
         }
