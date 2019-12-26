@@ -77,10 +77,6 @@ window (a/b): set the similarity window (see -s and -w parameters below)
 start [n]: start adding tracks to the queue, maintaining a minimum of
 n (see -n parameter below).
 
-autoclean [n]: retain only the last n previously-played tracks on the
-queue (see -a parameter below). Default is -1, which is not to remove
-tracks at all.
-
 stop: cease adding songs to the queue, but remain ready to follow
 commands.
 
@@ -108,8 +104,10 @@ command line parameters.
 - -n: keep the future queue at least this long
 - -s: check this many named playlist tracks for similarity
 - -w: check this many recently-played tracks for similarity
-- -a: retain this many previous-played tracks on the queue
 - -v: be verbose
+
+(Note that -a / autoclean is no longer available; this job is now done
+by consume, below.)
 
 # loadplaylist
 
