@@ -102,14 +102,16 @@ while (1) {
         }
         closedir D;
       }
-      $s=$mpd->update_status;
-      while ($s->{updating_db}) {
-        $mpd->idle('update');
+      if (exists $cache{$id}) {
         $s=$mpd->update_status;
-      }
-      $mpd->add($o{w}.'/'.$cache{$id});
-      if ($s->{state} eq 'stop') {
-        $mpd->play;
+        while ($s->{updating_db}) {
+          $mpd->idle('update');
+          $s=$mpd->update_status;
+        }
+        $mpd->add($o{w}.'/'.$cache{$id});
+        if ($s->{state} eq 'stop') {
+          $mpd->play;
+        }
       }
     }
     if ($timeleft >= $o{t}) {
