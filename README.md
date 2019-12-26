@@ -259,3 +259,20 @@ by downloading the next video in the playlist, storing it in mpd's
 archive, doing a microupdate to make sure it's queueable, and queueing
 it. If a file matching that YouTube ID has already been downloaded to
 the relevant directory, it'll simply use that instead.
+
+# consume
+
+This is a sort of "super" consume mode: rather than deleting a track
+the moment it's been played, it will leave a history (by default three
+tracks) so that users inspecting the playlist can see what's been
+played recently.
+
+Do not try to use this with random mode! Since it wouldn't work
+anyway, consume will turn off random mode when it starts up.
+
+consume will respect MPD_HOST and MPD_PORT environment variables, or
+command line parameters.
+
+- -h: MPD host
+- -p: MPD port
+- -c: old tracks to retain (default 3)
