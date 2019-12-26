@@ -251,6 +251,9 @@ command line parameters.
 - -t: timeout (default 300 seconds)
 - -s: shuffle playlist each cycle
 
+Other parameters should be YouTube (or Melodice) playlist URLs, or
+individual YouTube video IDs or URLs.
+
 It will try to keep a minimum of (timeout) seconds of music cued up,
 by downloading the next video in the playlist, storing it in mpd's
 archive, doing a microupdate to make sure it's queueable, and queueing
