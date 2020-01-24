@@ -160,6 +160,7 @@ Basic commands are:
 - play - start playing
 - resume - resume after a pause (also "unpause")
 - restart - start the current track again from the beginning
+- shuffle - randomly reorder the queue [not the same thing as random]
 - clear - clear the queue (and stop playing)
 - clean - delete from the queue everything before the current track
 - crop - delete from the queue everything after the current track
@@ -169,9 +170,9 @@ Basic commands are:
   line)
 - (no)single - turn single mode on or off
 - (no)repeat - turn repeat mode on or off
-- (no)random - turn random mode on or off
+- (no)random - turn random mode on or off [not the same thing as shuffle]
 - (no)consume - turn consume mode on or off
-- (no)crossfade - turn crossfade mode on or off
+- (no)crossfade N - turn crossfade mode off or to N seconds
 - rmpl (playlistname) - delete a named playlist
 
 The advanced commands are:

@@ -34,6 +34,8 @@ while (@ARGV) {
     $mpd->next;
   } elsif ($cmd eq 'prev') {
     $mpd->previous;
+  } elsif ($cmd eq 'shuffle') {
+    $mpd->shuffle;
   } elsif ($cmd eq 'clear') {
     $mpd->clear;
   } elsif ($cmd eq 'clean') {
@@ -96,7 +98,13 @@ while (@ARGV) {
   } elsif ($cmd =~ /^(no)?consume$/i) {
     $mpd->consume((defined $1)?0:1);
   } elsif ($cmd =~ /^(no)?crossfade$/i) {
-    $mpd->crossfade((defined $1)?0:1);
+    my $size;
+    if (defined $1) {
+      $size=0;
+    } else {
+      $size=shift @ARGV;
+    }
+    $mpd->crossfade($size);
   } elsif ($cmd eq 'p') {
     if ($ARGV[0] =~ /^[0-9]+$/) {
       $mpd->play(shift @ARGV);
