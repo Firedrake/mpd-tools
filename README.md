@@ -164,6 +164,7 @@ Basic commands are:
 - clear - clear the queue (and stop playing)
 - clean - delete from the queue everything before the current track
 - crop - delete from the queue everything after the current track
+- wait-XX - wait for an MPD event
 - q - show the queue (human-readable form)
 - qf - show the queue (filenames only)
 - viq - edit the queue (using $VISUAL, $EDITOR or vi, one filename per
@@ -174,6 +175,29 @@ Basic commands are:
 - (no)consume - turn consume mode on or off
 - (no)crossfade N - turn crossfade mode off or to N seconds
 - rmpl (playlistname) - delete a named playlist
+
+The wait command requires one or more event types, comma-separated;
+thus wait-playlist,player will wait for a playlist or a player event.
+Types are:
+
+database (the song database has been changed after an update)
+
+update (a database update has started or finished)
+
+stored_playlist (a stored playlist has been modified)
+
+playlist (the current playlist has been modified; this includes the
+current song changing)
+
+player (playback has been started, stopped or seeked)
+
+mixer (the volume has been changed)
+
+output (an audio output has been enabled/disabled)
+
+sticker (the sticker database has been changed)
+
+subscription (a client has subscribed to/unsubscribed from a channel)
 
 The advanced commands are:
 

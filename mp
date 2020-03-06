@@ -111,6 +111,17 @@ while (@ARGV) {
     } else {
       $mpd->play;
     }
+  } elsif ($cmd =~ /^wait-(.*)/) {
+    my %y=map {$_=>1} split ',',$1;
+    my %z;
+    foreach my $k (qw(database update stored_playlist playlist player mixer output sticker subscription)) {
+      if (exists $y{$k}) {
+        $z{$k}=1;
+      }
+    }
+    if (%z) {
+      $mpd->idle(keys %z);
+    }
   } elsif ($cmd eq 'q') {
     my @q=map {[$_->{Title},$_->{Artist}]} @p;
     print tabular(\@q);
