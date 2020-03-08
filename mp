@@ -114,7 +114,7 @@ while (@ARGV) {
   } elsif ($cmd =~ /^wait-(.*)/) {
     my %y=map {$_=>1} split ',',$1;
     my %z;
-    foreach my $k (qw(database update stored_playlist playlist player mixer output sticker subscription)) {
+    foreach my $k (qw(database update stored_playlist playlist player mixer output sticker subscription options)) {
       if (exists $y{$k}) {
         $z{$k}=1;
       }
