@@ -201,14 +201,16 @@ while (@ARGV) {
     $mpd->send_message($channel,'"'.join(' ',@ARGV).'"');
     @ARGV=();
   } elsif ($cmd eq 'update') {
-    if ($s->{updating_db}) {
+    while ($s->{updating_db}) {
       warn "Waiting for an update to finish.\n";
       $mpd->idle('update');
+      $mpd->update_status;
     }
     my $loc=join(' ',@ARGV);
     if ($loc eq '/') {
       $mpd->update();
     } elsif ($loc) {
+      $loc =~ s/\/$//;
       $mpd->update($loc);
     } else {
       warn "For full database update, send mp update /.\n";
