@@ -204,7 +204,7 @@ while (@ARGV) {
     while ($s->{updating_db}) {
       warn "Waiting for an update to finish.\n";
       $mpd->idle('update');
-      $mpd->update_status;
+      $s=$mpd->update_status;
     }
     my $loc=join(' ',@ARGV);
     if ($loc eq '/') {
