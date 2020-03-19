@@ -202,6 +202,8 @@ sticker (the sticker database has been changed)
 
 subscription (a client has subscribed to/unsubscribed from a channel)
 
+If no valid type of wait event is found, mp will exit.
+
 The advanced commands are:
 
 - search - look for a song with title matching the remaining

@@ -121,6 +121,9 @@ while (@ARGV) {
     }
     if (%z) {
       $mpd->idle(keys %z);
+    } else {
+      warn "No wait states.\n";
+      exit 1;
     }
   } elsif ($cmd eq 'q') {
     my @q=map {[$_->{Title},$_->{Artist}]} @p;
