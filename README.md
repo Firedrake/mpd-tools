@@ -195,7 +195,7 @@ mixer (the volume has been changed)
 
 output (an audio output has been enabled/disabled)
 
-options (a play optin has been changed, such as consume or single
+options (a play option has been changed, such as consume or single
 mode)
 
 sticker (the sticker database has been changed)
