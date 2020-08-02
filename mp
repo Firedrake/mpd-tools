@@ -105,6 +105,8 @@ while (@ARGV) {
       $size=shift @ARGV;
     }
     $mpd->crossfade($size);
+  } elsif ($cmd =~ /^vol(ume)?$/i) {
+    $mpd->volume(shift @ARGV);
   } elsif ($cmd eq 'p') {
     if ($ARGV[0] =~ /^[0-9]+$/) {
       $mpd->play(shift @ARGV);
@@ -242,6 +244,16 @@ while (@ARGV) {
     }
     map {$mpd->playlist_add($pl,$_)} @pl;
     @ARGV=();
+  } elsif ($cmd eq 'checkq') {
+    foreach my $track (@p) {
+      if ($track->{type} eq 'file') {
+        my $i=$mpd->find('file',$track->{uri});
+        unless (keys %{$i}) {
+          $mpd->delete_id($track->{Id});
+        }
+#        print YAML::XS::Dump($track->{uri},$i);
+      }
+    }
   } elsif ($cmd eq 'vipl') {
     my $pl=shift @ARGV;
     my %pl=map {$_->{playlist} => 1} $mpd->list_playlists;

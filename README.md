@@ -175,6 +175,9 @@ Basic commands are:
 - (no)consume - turn consume mode on or off
 - (no)crossfade N - turn crossfade mode off or to N seconds
 - rmpl (playlistname) - delete a named playlist
+- checkq - remove from the queue any track that no longer exists.
+  (Because if the database is in "proxy" mode this doesn't happen
+  automatically.)
 
 The wait command requires one or more event types, comma-separated;
 thus wait-playlist,player will wait for a playlist or a player event.
