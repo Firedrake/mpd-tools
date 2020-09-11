@@ -97,7 +97,12 @@ while (@ARGV) {
     $mpd->random((defined $1)?0:1);
   } elsif ($cmd =~ /^(no)?consume$/i) {
     $mpd->consume((defined $1)?0:1);
-  } elsif ($cmd =~ /^(no)?crossfade$/i) {
+  } elsif ($cmd eq 'reset') {
+    $mpd->consume(0);
+    $mpd->single(0);
+    $mpd->repeat(0);
+    $mpd->random(0);
+} elsif ($cmd =~ /^(no)?crossfade$/i) {
     my $size;
     if (defined $1) {
       $size=0;

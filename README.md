@@ -173,6 +173,7 @@ Basic commands are:
 - (no)repeat - turn repeat mode on or off
 - (no)random - turn random mode on or off [not the same thing as shuffle]
 - (no)consume - turn consume mode on or off
+- reset - turn off single, repeat, random and consume modes
 - (no)crossfade N - turn crossfade mode off or to N seconds
 - rmpl (playlistname) - delete a named playlist
 - checkq - remove from the queue any track that no longer exists.
