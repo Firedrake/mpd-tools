@@ -291,6 +291,7 @@ sub tabular {
   my @columnlength;
   foreach my $row (@{$d}) {
     foreach my $colno (0..$#{$row}) {
+      $row->[$colno] ||= '';
       if (!defined($columnlength[$colno]) ||
           $columnlength[$colno] < length($row->[$colno])) {
         $columnlength[$colno]=length($row->[$colno]);
