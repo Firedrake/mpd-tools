@@ -7,6 +7,7 @@ use Net::MPD;
 use YAML::XS qw(LoadFile DumpFile);
 use Getopt::Std;
 use File::Temp qw(tempfile);
+use POSIX qw(strftime);
 
 my %o=(h => $ENV{MPD_HOST} || 'localhost',
        p => $ENV{MPD_PORT} || '6600');
@@ -54,7 +55,7 @@ while (@ARGV) {
     } else {
       $mpd->clear;
     }
-  } elsif ($cmd eq 'cropto') {
+  } elsif ($cmd eq 'cropto' || $cmd eq 'endat') {
     if (exists $s->{song}) {
       my $t=shift @ARGV;
       my @t=localtime;
@@ -64,21 +65,32 @@ while (@ARGV) {
         $dt+=86400;
       }
       my @a=split ':',$s->{time};
-      my $acc=$a[1]-$a[0]; # time to end of current track
       my @pl=map {$_->{Id}} @p;
-      splice @pl,0,$s->{song}+1; # all future tracks
-      while ($acc <= $dt && @pl) {
-        my $si=$mpd->playlist_id($pl[0]);
-        $acc+=$si->{duration};
-        if ($acc <= $dt) {
-          shift @pl;
+      if ($cmd eq 'cropto') {
+        my $acc=$a[1]-$a[0];       # time to end of current track
+        splice @pl,0,$s->{song}+1; # all future tracks
+        while ($acc <= $dt && @pl) {
+          my $si=$mpd->playlist_id($pl[0]);
+          $acc+=$si->{duration};
+          if ($acc <= $dt) {
+            shift @pl;
+          }
+        }
+        if (@pl) {
+          map {$mpd->delete_id($_)} @pl;
+        }
+      } else {
+        my $st=$dt;
+        while (my $id=pop @pl) {
+          my $si=$mpd->playlist_id($id);
+          $st-=$si->{duration};
+          if ($st <= 0) {
+            $mpd->play_id($id);
+            $mpd->seek_cur(int(-$st));
+            last;
+          }
         }
       }
-      if (@pl) {
-        map {$mpd->delete_id($_)} @pl;
-      }
-    } else {
-      $mpd->clear;
     }
     @ARGV=();
   } elsif ($cmd eq 'pause') {
@@ -102,7 +114,7 @@ while (@ARGV) {
     $mpd->single(0);
     $mpd->repeat(0);
     $mpd->random(0);
-} elsif ($cmd =~ /^(no)?crossfade$/i) {
+  } elsif ($cmd =~ /^(no)?crossfade$/i) {
     my $size;
     if (defined $1) {
       $size=0;
@@ -135,6 +147,24 @@ while (@ARGV) {
   } elsif ($cmd eq 'q') {
     my @q=map {[$_->{Title},$_->{Artist}]} @p;
     print tabular(\@q);
+  } elsif ($cmd eq 'eta' && $s->{state} eq 'play') {
+    my @q;
+    my $t=time;
+    my @tt=split ':',$s->{time};
+    $t+=$tt[1]-$tt[0];
+    if (exists $s->{song}) {
+      my @pl=@p;
+      splice @pl,0,$s->{song};
+      push @q,['',$pl[0]->{Title},strftime('%H:%M',localtime($t))];
+      shift @pl;
+      foreach my $si (@pl) {
+        my @a=($q[-1][-1],$si->{Title});
+        $t+=$si->{Time};
+        push @a,strftime('%H:%M',localtime($t));
+        push @q,\@a;
+      }
+      print tabular(\@q);
+    }
   } elsif ($cmd eq 'qf') {
     my @q=map {$_->{uri}} @p;
     print map{"$_\n"} @q; 
@@ -256,7 +286,7 @@ while (@ARGV) {
         unless (keys %{$i}) {
           $mpd->delete_id($track->{Id});
         }
-#        print YAML::XS::Dump($track->{uri},$i);
+        #        print YAML::XS::Dump($track->{uri},$i);
       }
     }
   } elsif ($cmd eq 'vipl') {

@@ -180,6 +180,22 @@ Basic commands are:
   (Because if the database is in "proxy" mode this doesn't happen
   automatically.)
 
+- cropto - leave current playing position intact, but crop the queue
+  such that it will have ended by a specific time. Takes HHMM or
+  HHMMSS as sole parameter. It will NOT stop the current track if that
+  would go past the specified time. ("I want to continue to listen to
+  this series of tracks without jumping, but stop when there isn't
+  time to play the next track before my deadline.")
+
+Example: `mp cropto 2300`
+
+- endat - change track and current position such that the last track
+  in the queue will end at the specified time (specified as in
+  `cropto`). ("I want the current queue to finish at exactly this
+  time, and I don't mind jumping now in order to get there.")
+  
+Example: `mp endat 2300`
+
 The wait command requires one or more event types, comma-separated;
 thus wait-playlist,player will wait for a playlist or a player event.
 Types are:
@@ -190,7 +206,7 @@ update (a database update has started or finished)
 
 stored_playlist (a stored playlist has been modified)
 
-playlist (the current playlist has been modified; this includes the
+playlist (the current queue has been modified; this includes the
 current song changing)
 
 player (playback has been started, stopped or seeked)
@@ -239,12 +255,6 @@ Example: `mp send robodj start 3`
   perform a full database update unless you give the parameter "/".
 
 Example: `mp update Popular/New Artist`
-
-- cropto - crop the playlist such that it will have ended by a
-  specific time. Takes HHMM or HHMMSS as sole parameter. It will NOT
-  stop the current track if that would go past the specified time.
-
-Example: `mp cropto 2300`
 
 - vipl - edit a named playlist (using $VISUAL, $EDITOR or vi, one
   filename per line). If the playlist does not exist it will be
