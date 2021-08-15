@@ -91,6 +91,7 @@ while (1) {
       unless (exists $cache{$id}) {
         my @cmd=qw(youtube-dl -q -x --no-check-certificate -o %(title)s.%(uploader_id)s.%(extractor_key)s_%(id)s.%(ext)s);
         system(@cmd,"https://youtube.com/watch?v=$id");
+        $mpd=Net::MPD->connect("$o{h}:$o{p}") or die "no reconnect";
         opendir D,$o{d}.'/'.$o{w};
         foreach my $file (grep /Youtube_$id/,readdir D) {
           $cache{$id}=$o{w}.'/'.decode("utf-8",$file);
