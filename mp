@@ -85,7 +85,7 @@ while (@ARGV) {
           my $si=$mpd->playlist_id($id);
           $st-=$si->{duration};
           if ($st <= 0) {
-            $mpd->play_id($id);
+            $mpd->play_id($si->{Id});
             $mpd->seek_cur(int(-$st));
             last;
           }
