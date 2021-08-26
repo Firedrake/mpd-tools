@@ -56,7 +56,6 @@ while (@ARGV) {
       $mpd->clear;
     }
   } elsif ($cmd eq 'cropto' || $cmd eq 'endat') {
-    if (exists $s->{song}) {
       my $t=shift @ARGV;
       my @t=localtime;
       $t =~ /([0-9][0-9])([0-9][0-9])([0-9][0-9])?/;
@@ -64,9 +63,10 @@ while (@ARGV) {
       while ($dt<0) {
         $dt+=86400;
       }
-      my @a=split ':',$s->{time};
       my @pl=map {$_->{Id}} @p;
       if ($cmd eq 'cropto') {
+      if (exists $s->{song}) {
+        my @a=split ':',$s->{time};
         my $acc=$a[1]-$a[0];       # time to end of current track
         splice @pl,0,$s->{song}+1; # all future tracks
         while ($acc <= $dt && @pl) {
@@ -79,19 +79,18 @@ while (@ARGV) {
         if (@pl) {
           map {$mpd->delete_id($_)} @pl;
         }
-      } else {
-        my $st=$dt;
+      }
+    } else { # $cmd eq 'endat'
+      my $st=$dt;
         while (my $id=pop @pl) {
           my $si=$mpd->playlist_id($id);
           $st-=$si->{duration};
           if ($st <= 0) {
-            $mpd->play_id($si->{Id});
-            $mpd->seek_cur(int(-$st));
+            $mpd->seek_id($si->{Id},int(-$st));
             last;
           }
         }
       }
-    }
     @ARGV=();
   } elsif ($cmd eq 'pause') {
     $mpd->pause(1);
