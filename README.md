@@ -181,6 +181,10 @@ Basic commands are:
   automatically.)
 - goto - jump to a specific position in the current track. Seconds,
   minutes:seconds and hours:minutes:seconds are all accepted.
+- copy - dump the current settings and playlist to a YAML stream on
+  stdout.
+- paste - take a YAML stream on stdin and use it to set the current
+  settings.
 - cropto - leave current playing position intact, but crop the queue
   such that it will have ended by a specific time. Takes HHMM or
   HHMMSS as sole parameter. It will NOT stop the current track if that

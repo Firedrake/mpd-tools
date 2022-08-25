@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 use Net::MPD;
-use YAML::XS qw(LoadFile DumpFile);
+use YAML::XS qw(Load LoadFile Dump DumpFile);
 use Getopt::Std;
 use File::Temp qw(tempfile);
 use POSIX qw(strftime);
@@ -133,6 +133,36 @@ while (@ARGV) {
       $mpd->seek_cur($tt);
     }
     $mpd->volume(shift @ARGV);
+  } elsif ($cmd eq 'copy') {
+    my $y = {};
+    foreach my $mode (qw(volume repeat random single consume crossfade)) {
+      $y->{flags}{$mode} = $s->{$mode} || 0;
+    }
+    if ($s->{state} ne 'stop') {
+      $c=$mpd->current_song;
+      $y->{position}{playlist} = $c->{Pos};
+      $y->{position}{elapsed} = $s->{elapsed};
+    }
+    $y->{playlist} = [map {$_->{uri}} @p];
+    print Dump($y);
+  } elsif ($cmd eq 'paste') {
+    my $yt = '';
+    while (<>) {
+      $yt .= $_;
+    }
+    my $y = Load($yt);
+    foreach my $mode (qw(volume repeat random single consume crossfade)) {
+      $mpd->$mode($y->{flags}{$mode});
+    }
+    $mpd->clear;
+    $mpd->stop;
+    foreach my $u (@{$y->{playlist}}) {
+      $mpd->add($u);
+    }
+    if (exists $y->{position}) {
+      $mpd->seek($y->{position}{playlist},$y->{position}{elapsed});
+      $mpd->pause(1);
+    }
   } elsif ($cmd eq 'p') {
     if ($ARGV[0] =~ /^[0-9]+$/) {
       $mpd->play(shift @ARGV);
