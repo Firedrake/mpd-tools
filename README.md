@@ -179,7 +179,8 @@ Basic commands are:
 - checkq - remove from the queue any track that no longer exists.
   (Because if the database is in "proxy" mode this doesn't happen
   automatically.)
-
+- goto - jump to a specific position in the current track. Seconds,
+  minutes:seconds and hours:minutes:seconds are all accepted.
 - cropto - leave current playing position intact, but crop the queue
   such that it will have ended by a specific time. Takes HHMM or
   HHMMSS as sole parameter. It will NOT stop the current track if that

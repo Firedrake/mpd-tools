@@ -123,6 +123,16 @@ while (@ARGV) {
     $mpd->crossfade($size);
   } elsif ($cmd =~ /^vol(ume)?$/i) {
     $mpd->volume(shift @ARGV);
+  } elsif ($cmd eq 'goto') {
+    my $tt = 0;
+    foreach my $n (split ':',shift @ARGV) {
+      $tt *= 60;
+      $tt += $n;
+    }
+    if ($tt <= $s->{duration}) {
+      $mpd->seek_cur($tt);
+    }
+    $mpd->volume(shift @ARGV);
   } elsif ($cmd eq 'p') {
     if ($ARGV[0] =~ /^[0-9]+$/) {
       $mpd->play(shift @ARGV);
