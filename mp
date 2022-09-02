@@ -132,7 +132,6 @@ while (@ARGV) {
     if ($tt <= $s->{duration}) {
       $mpd->seek_cur($tt);
     }
-    $mpd->volume(shift @ARGV);
   } elsif ($cmd eq 'copy') {
     my $y = {};
     foreach my $mode (qw(volume repeat random single consume crossfade)) {
