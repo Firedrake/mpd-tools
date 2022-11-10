@@ -15,6 +15,8 @@ getopts('h:p:q',\%o);
 
 my $mpd=Net::MPD->connect("$o{h}:$o{p}");
 
+binmode STDOUT,':encoding(utf-8)';
+
 my @p=$mpd->playlist_info;
 my $c;
 my $s=$mpd->update_status;
@@ -22,9 +24,9 @@ if (!exists $o{q} && $s->{state} eq 'play') {
   $c=$mpd->current_song;
   my $st=join(' = ',grep /./,map {$c->{$_} || ''} qw(Album Track Artist Title));
   $st ||= $c->{uri};
-  print "$st\n";
+  print STDERR "$st\n";
   my @t=map {writetime($_)} split ':',$s->{time};
-  print join('/',@t),"\n";
+  print STDERR join('/',@t),"\n";
 }
 
 while (@ARGV) {
